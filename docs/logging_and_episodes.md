@@ -34,6 +34,7 @@ See `self_improvement/evaluation/episode_schema.yaml` for the full schema. Here'
   "task_id": "TASK-1234",
   "department": "build",
   "agent_id": "build-sub-003",
+  "prompt_version": "1.2",
   "timestamp_start": "2025-01-15T10:30:00Z",
   "timestamp_end": "2025-01-15T10:32:00Z",
   "task_description": "Implement pagination for /api/users endpoint",
@@ -64,12 +65,15 @@ Required for any self-improvement:
   "task_id": "...",
   "department": "...",
   "agent_id": "...",
+  "prompt_version": "1.0",
   "timestamp_start": "...",
   "timestamp_end": "...",
   "task_description": "...",
   "result": { "signal": "done | blocked | needs-review" }
 }
 ```
+
+`prompt_version` is technically optional but **strongly recommended from day one** — it costs nothing to log and becomes essential once you start iterating on prompts. Without it you can't tell whether a quality change came from a prompt update or something else.
 
 ### Level 2: With Actions
 
@@ -78,6 +82,7 @@ Adds visibility into what the agent actually did:
 ```json
 {
   "...": "...level 1 fields...",
+  "playbook_hash": "a3f8c91d",
   "actions": [
     { "step": 1, "action": "...", "target": "...", "summary": "..." }
   ],
@@ -85,6 +90,8 @@ Adds visibility into what the agent actually did:
   "cost_usd": 0.03
 }
 ```
+
+`playbook_hash` is a short hash of the department playbook file at execution time. Lets you correlate whether having a newer playbook improved quality.
 
 ### Level 3: With Reflection (Tier 1)
 
@@ -157,6 +164,8 @@ Common queries you'll want to support:
 | Episodes with a specific failure pattern | Grep `actions` or `reflection.issues` |
 | Average score trend | Aggregate `evaluation.weighted_score` over time |
 | Cost per department | Sum `cost_usd` grouped by `department` |
+| Score delta after prompt change | Compare scores before/after a `prompt_version` bump |
+| Playbook effectiveness | Compare scores for episodes with vs. without playbook context |
 
 With `jq`:
 
@@ -166,6 +175,9 @@ cat logs/episodes/build/2025-01-15.jsonl | jq 'select(.evaluation.weighted_score
 
 # Average score for growth this week
 cat logs/episodes/growth/2025-01-1*.jsonl | jq '.evaluation.weighted_score' | awk '{sum+=$1; n++} END {print sum/n}'
+
+# Average score by prompt version (did the prompt update help?)
+cat logs/episodes/build/*.jsonl | jq -r '[.prompt_version, .evaluation.weighted_score] | @csv' | sort
 ```
 
 ## Retention and Archival

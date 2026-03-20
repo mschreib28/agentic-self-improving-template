@@ -8,19 +8,7 @@ This file is maintained by the growth meta-agent. After each campaign episode, n
 
 ## Guidelines
 
-### Rule 2 — 2026-03-20
-**Rule:** Lead with practical value for this audience segment. The 'practical_value' angle outperformed 'social_proof' by 4.0 points.
-**Evidence:** Variant GROWTH-042-v3 achieved 14.2 signups/1k vs 5.8 for GROWTH-042-v2.
-**Confidence:** medium
-**Source episode:** ep-20260320-001
-
-
-### Rule 3 — 2026-03-20
-**Rule:** Unsubscribe rate is a reliable signal for audience fit with this segment. Variants with unsubscribe_rate > 0.02 consistently underperformed on primary metrics.
-**Evidence:** Variant GROWTH-042-v2 had the highest unsubscribe rate (0.012) and the lowest score (1.0).
-**Confidence:** medium
-**Source episode:** ep-20260320-001
-
+*No guidelines yet. Run `growth_agent.py` to generate the first entry.*
 
 <!-- The meta-agent appends entries in this format:
 

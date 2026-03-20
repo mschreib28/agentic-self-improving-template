@@ -112,6 +112,8 @@ Each episode captures the full context of a task execution:
   "task_id": "TASK-1234",
   "department": "build",
   "agent_id": "build-sub-003",
+  "prompt_version": "1.2",
+  "playbook_hash": "a3f8c91d",
   "timestamp_start": "2025-01-15T10:30:00Z",
   "timestamp_end": "2025-01-15T10:32:00Z",
   "task_description": "Implement pagination for /api/users endpoint",
@@ -127,6 +129,67 @@ Each episode captures the full context of a task execution:
   "human_feedback": null
 }
 ```
+
+## Agent Context Assembly
+
+When an agent starts a task, its context window is assembled from external files in a specific order. This is how agents reconstruct their identity, knowledge, and task context on every invocation — there is no persistent runtime state.
+
+### Context Stack (loaded top to bottom)
+
+```
+┌───────────────────────────────────────────────────────────┐
+│  1. SYSTEM PROMPT                                         │
+│     Source: config/prompts/{department}.md                 │
+│     Contains: role, responsibilities, tools, rules        │
+│     Versions: YAML front matter (version: "X.Y")          │
+│     → This is the agent's identity and personality.       │
+├───────────────────────────────────────────────────────────┤
+│  2. DEPARTMENT PLAYBOOK                                   │
+│     Source: config/playbooks/{department}_playbook.md      │
+│     Contains: learned guidelines from past episodes       │
+│     Updated by: Tier 3 meta-agent                         │
+│     → This is the agent's long-term declarative memory.   │
+├───────────────────────────────────────────────────────────┤
+│  3. RECENT EPISODES (last N for this department)          │
+│     Source: logs/episodes/{department}/{date}.jsonl        │
+│     Contains: task, actions, result, score, lessons       │
+│     Selection: recency window (default: last 5 episodes)  │
+│     → This is the agent's short-term episodic memory.     │
+├───────────────────────────────────────────────────────────┤
+│  4. TASK ASSIGNMENT (from parent agent)                   │
+│     Source: inter-agent message                           │
+│     Contains: description, constraints, priority, context │
+│     → This is what the agent needs to do right now.       │
+├───────────────────────────────────────────────────────────┤
+│  5. POLICIES (as needed)                                  │
+│     Source: config/policies/*.yaml                        │
+│     Contains: spawn rules, escalation rules, budgets      │
+│     → Loaded selectively; dept heads need spawn rules,    │
+│       all agents need escalation rules.                   │
+└───────────────────────────────────────────────────────────┘
+```
+
+### Why This Order Matters
+
+- **System prompt first** — sets the baseline behavior and persona. Everything else is interpreted through this lens.
+- **Playbook before episodes** — playbook rules are distilled, high-signal knowledge. Individual episodes provide color but may be noisy.
+- **Episodes before task** — gives the agent awareness of recent successes and failures before reading the new assignment.
+- **Task last** — the freshest, most relevant information sits closest to the generation point.
+
+### Durability Guarantees
+
+| Layer | What Survives | What Doesn't |
+|---|---|---|
+| System prompt | Agent restarts, code deploys | Prompt updates (intentional — bump version) |
+| Playbook | Agent restarts, prompt updates | Meta-agent errors (mitigated by human review gate) |
+| Recent episodes | Agent restarts | Log rotation (configure retention window) |
+| Task assignment | Nothing — ephemeral by design | |
+
+### Implementation Notes
+
+- **Log `prompt_version` and `playbook_hash` in every episode** so you can correlate context changes with quality changes. See `self_improvement/evaluation/episode_schema.yaml` for the fields.
+- **Context window budget**: if the playbook + episodes + task exceed your model's context limit, truncate episodes first (they're the lowest-signal layer). If still too large, summarize the playbook.
+- **For sub-agents**: skip the playbook and episodes layers — sub-agents are stateless leaf nodes that receive all necessary context in their task assignment.
 
 ## Communication Protocols
 

@@ -70,11 +70,22 @@ episode:
           type: string
 
   optional:
-    context:
-      type: object
-      description: "Input context provided to the agent (files, prior results, etc.)"
+    prompt_version:
+      type: string
+      description: >
+        Version of the system prompt used by the agent during this episode.
+        Matches the `version` field in the YAML front matter of the prompt file
+        (e.g., "1.0", "1.3"). Enables correlation between prompt changes and
+        quality score changes — essential for Tier 3 policy updates.
 
-    constraints:
+    playbook_hash:
+      type: string
+      description: >
+        Short hash (e.g., first 8 chars of SHA-256) of the department playbook
+        file at the time of execution. Lets you tell whether the agent had
+        access to the latest learned guidelines.
+
+    context:
       type: object
       properties:
         max_cycles:

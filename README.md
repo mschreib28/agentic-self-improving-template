@@ -39,6 +39,7 @@ You already have a multi-agent system — a Foreman orchestrating department hea
 │
 ├── config/
 │   ├── prompts/               ← System and role prompts (versioned)
+│   ├── playbooks/             ← Per-department learned guidelines (long-term memory)
 │   └── policies/              ← Spawn rules, escalation, constraints (YAML)
 │
 └── docs/
@@ -66,6 +67,8 @@ See [`docs/getting_started.md`](docs/getting_started.md) for a detailed walkthro
 | Reflection loop | `self_improvement/reflection_loops/` | Agent critiques its own output before marking done |
 | Rubric | `self_improvement/evaluation/` | Scoring criteria per department or task type |
 | Policy update | `self_improvement/policy_updates/` | Proposed change to a prompt or config, gated by review |
+| Playbook | `config/playbooks/` | Per-department learned guidelines — long-term agent memory |
+| Context assembly | `architecture/SYSTEM_DESIGN.md` | How agents reconstruct identity + knowledge on each invocation |
 
 ## Conventions
 

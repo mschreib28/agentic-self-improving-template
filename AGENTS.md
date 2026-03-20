@@ -164,7 +164,53 @@ Pick one department — ideally the one producing the most output — and wire i
 ## Adding a New Department
 
 1. Add a row to the Department Heads table above.
-2. Create a system prompt in `config/prompts/`.
-3. Add spawn and escalation entries in `config/policies/`.
-4. Create an evaluation rubric in `self_improvement/evaluation/`.
-5. Optionally add an example under `examples/`.
+2. Create a system prompt in `config/prompts/` (copy `department_head.md`, fill in `{{variables}}`).
+3. Create a department playbook at `config/playbooks/{department}_playbook.md` (copy the template — see below).
+4. Add spawn and escalation entries in `config/policies/`.
+5. Create an evaluation rubric in `self_improvement/evaluation/rubrics.yaml`.
+6. Optionally add an example under `examples/`.
+
+### Department Playbook Convention
+
+Every department should have a **playbook file** — a living document of learned guidelines that the department head reads as context on every invocation. This is how the system retains knowledge across restarts and prompt updates.
+
+| Item | Convention |
+|---|---|
+| **Location** | `config/playbooks/{department}_playbook.md` |
+| **Who writes** | The Tier 3 meta-agent appends rules after analyzing episodes |
+| **Who reads** | The department head, loaded as context alongside its system prompt |
+| **Format** | Markdown with structured rule entries (see template below) |
+| **Versioning** | Git tracks history; individual rules have dates and source episode IDs |
+
+**Template** — copy this for each new department:
+
+```markdown
+# {Department} Playbook
+
+Guidelines derived from past episodes. Read by the {department} head
+as context on every task. Maintained by the meta-agent.
+
+---
+
+## Guidelines
+
+*No guidelines yet.*
+
+<!-- Entries follow this format:
+
+### Rule [N] — [date]
+**Rule:** Concise actionable statement.
+**Evidence:** What data supported this (episode ID, metric delta).
+**Confidence:** high / medium / low
+**Source episode:** ep-YYYYMMDD-NNN
+
+-->
+
+---
+
+## Archived / Superseded Rules
+
+<!-- Move rules here when newer evidence contradicts them. -->
+```
+
+See `examples/growth_agent/growth_playbook.md` for a working example.
