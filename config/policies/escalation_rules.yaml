@@ -1,0 +1,80 @@
+# escalation_rules.yaml — When and how agents escalate issues
+#
+# Defines escalation triggers, targets, and protocols.
+# Read by all agents to determine when to escalate vs. retry.
+
+version: "1.0"
+
+escalation_chain:
+  - level: 1
+    from: sub-agent
+    to: department-head
+    trigger: "blocked after 2 attempts"
+
+  - level: 2
+    from: department-head
+    to: foreman
+    trigger: "blocked after 1 cycle or sub-agent escalation unresolved"
+
+  - level: 3
+    from: foreman
+    to: human-operator
+    trigger: "blocked or system-level issue"
+
+escalation_triggers:
+  blocked_retries:
+    sub_agent_max: 2
+    department_head_max: 1
+    description: "Max attempts before escalating. Sub-agents try twice, dept heads once."
+
+  quality_threshold:
+    score: 2.5
+    consecutive_episodes: 3
+    action: flag_for_review
+    description: "If a department's average score falls below threshold for N consecutive episodes, flag."
+
+  cycle_budget_exceeded:
+    enabled: true
+    action: force_blocked_signal
+    description: "If an agent exceeds its max_cycles, force a blocked signal and escalate."
+
+  policy_change_proposed:
+    action: route_to_human
+    description: "Any policy/prompt change proposal must go through human review."
+
+  cost_budget_exceeded:
+    threshold_usd: 1.00
+    action: pause_and_escalate
+    description: "If a single task exceeds cost budget, pause and escalate to Foreman."
+
+escalation_message_format:
+  required_fields:
+    - escalation_level
+    - from_agent
+    - to_agent
+    - reason
+    - context
+    - attempts_made
+    - suggested_resolution
+
+  example:
+    escalation_level: 1
+    from_agent: "build-sub-003"
+    to_agent: "build-head"
+    reason: "Cannot resolve failing test — dependency version conflict"
+    context:
+      task_id: "TASK-1234"
+      error: "ModuleNotFoundError: No module named 'foo'"
+      attempts: 2
+    attempts_made: 2
+    suggested_resolution: "Update dependency in requirements.txt or pin compatible version"
+
+notification_channels:
+  human_escalation:
+    method: "slack | email | github_issue"
+    channel: "{{ESCALATION_CHANNEL}}"
+    urgency_levels:
+      low: "batch daily"
+      medium: "notify within 1 hour"
+      high: "notify immediately"
+      critical: "page on-call"

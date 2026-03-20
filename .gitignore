@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Generated episode logs (real logs should live outside the repo or be gitignored)
+examples/*/episodes.jsonl
+logs/
+
+# Backup files created by policy_diff.py
+*.bak
+
+# Editor
+.DS_Store
+*.swp
+*.swo

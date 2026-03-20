@@ -1,0 +1,111 @@
+# rubrics.yaml — Scoring rubrics per department
+#
+# Each department has a set of criteria with weights that sum to 1.0.
+# The evaluator scores each criterion on a 1-5 scale, then computes
+# a weighted average.
+#
+# To add a department: copy a block and customize the criteria.
+# To adjust sensitivity: change the weights (must sum to 1.0).
+
+rubrics:
+  build:
+    description: "Rubric for code generation and implementation tasks"
+    criteria:
+      - name: correctness
+        description: "Code works as specified, no bugs"
+        weight: 0.30
+      - name: test_coverage
+        description: "Tests exist and cover key paths"
+        weight: 0.20
+      - name: code_quality
+        description: "Readable, maintainable, follows project style"
+        weight: 0.20
+      - name: completeness
+        description: "All requirements addressed, nothing missing"
+        weight: 0.20
+      - name: security
+        description: "No obvious security vulnerabilities"
+        weight: 0.10
+
+  growth:
+    description: "Rubric for content and campaign tasks"
+    criteria:
+      - name: audience_fit
+        description: "Content matches target audience"
+        weight: 0.25
+      - name: cta_effectiveness
+        description: "Call-to-action is clear and compelling"
+        weight: 0.25
+      - name: brand_consistency
+        description: "Matches brand voice and guidelines"
+        weight: 0.20
+      - name: seo_quality
+        description: "Optimized for search (if applicable)"
+        weight: 0.15
+      - name: originality
+        description: "Not generic or templated-feeling"
+        weight: 0.15
+
+  research:
+    description: "Rubric for research and analysis tasks"
+    criteria:
+      - name: accuracy
+        description: "Claims are factually correct"
+        weight: 0.30
+      - name: source_quality
+        description: "Sources are cited and credible"
+        weight: 0.25
+      - name: completeness
+        description: "Covers the topic thoroughly"
+        weight: 0.20
+      - name: clarity
+        description: "Well-organized and easy to understand"
+        weight: 0.15
+      - name: recency
+        description: "Information is current"
+        weight: 0.10
+
+  qa:
+    description: "Rubric for testing and quality assurance tasks"
+    criteria:
+      - name: coverage
+        description: "Tests cover all acceptance criteria"
+        weight: 0.30
+      - name: edge_cases
+        description: "Edge cases and error paths are tested"
+        weight: 0.25
+      - name: reproducibility
+        description: "Tests are deterministic and reproducible"
+        weight: 0.20
+      - name: clarity
+        description: "Test descriptions are clear and specific"
+        weight: 0.15
+      - name: efficiency
+        description: "No redundant or overlapping tests"
+        weight: 0.10
+
+  design:
+    description: "Rubric for UX and design tasks"
+    criteria:
+      - name: usability
+        description: "Design is intuitive and easy to use"
+        weight: 0.30
+      - name: accessibility
+        description: "Meets accessibility standards (WCAG)"
+        weight: 0.25
+      - name: consistency
+        description: "Follows existing design system"
+        weight: 0.20
+      - name: completeness
+        description: "All states and flows are covered"
+        weight: 0.15
+      - name: aesthetics
+        description: "Visually appealing and modern"
+        weight: 0.10
+
+# Thresholds for automated decisions
+thresholds:
+  auto_approve: 4.0      # Episodes scoring above this are auto-approved
+  flag_for_review: 2.5    # Episodes scoring below this get flagged
+  trend_alert: -0.5       # Alert if rolling average drops by this much
+  min_episodes_for_trend: 10  # Minimum episodes before computing trends

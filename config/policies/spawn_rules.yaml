@@ -1,0 +1,81 @@
+# spawn_rules.yaml — Agent spawning permissions and limits
+#
+# Defines who can spawn whom and concurrency constraints.
+# Read by the Foreman and department heads at task assignment time.
+
+version: "1.0"
+
+spawn_permissions:
+  foreman:
+    can_spawn:
+      - research-head
+      - architect-head
+      - build-head
+      - design-head
+      - qa-head
+      - growth-head
+      - reporter-head
+      - pm-sync-head
+    max_concurrent_departments: 4
+    notes: "Foreman can run up to 4 departments in parallel"
+
+  research-head:
+    can_spawn: [research-sub-agent]
+    max_concurrent: 3
+
+  architect-head:
+    can_spawn: [architect-sub-agent]
+    max_concurrent: 2
+
+  build-head:
+    can_spawn: [build-sub-agent, review-sub-agent]
+    max_concurrent: 3
+    notes: "Build head can also spawn review sub-agents for code review"
+
+  design-head:
+    can_spawn: [design-sub-agent]
+    max_concurrent: 2
+
+  qa-head:
+    can_spawn: [qa-sub-agent]
+    max_concurrent: 3
+
+  growth-head:
+    can_spawn: [content-sub-agent, metrics-sub-agent]
+    max_concurrent: 3
+    notes: "Growth head spawns both content generators and metrics collectors"
+
+  reporter-head:
+    can_spawn: [reporter-sub-agent]
+    max_concurrent: 2
+
+  pm-sync-head:
+    can_spawn: []
+    max_concurrent: 0
+    notes: "PM-Sync operates as a single agent, no sub-agents"
+
+# Sub-agents are leaf nodes and cannot spawn anyone.
+# This is enforced by the runtime, not just policy.
+
+cross_department_rules:
+  - description: "Build → QA handoff"
+    from: build-head
+    to: qa-head
+    requires: foreman_coordination
+    notes: "Build head can request QA, but must go through Foreman"
+
+  - description: "Design → Build handoff"
+    from: design-head
+    to: build-head
+    requires: foreman_coordination
+
+  - description: "Research → any department"
+    from: research-head
+    to: any
+    requires: foreman_coordination
+    notes: "Research findings may be consumed by any department"
+
+global_limits:
+  max_total_agents: 20
+  max_agent_lifetime_minutes: 30
+  cost_budget_per_task_usd: 1.00

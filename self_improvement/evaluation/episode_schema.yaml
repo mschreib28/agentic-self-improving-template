@@ -1,0 +1,158 @@
+# episode_schema.yaml — Canonical schema for episode log entries
+#
+# Every task execution produces one episode. Episodes are stored as
+# JSONL (one JSON object per line) for append-friendly logging.
+#
+# This schema defines the required and optional fields.
+
+episode:
+  required:
+    episode_id:
+      type: string
+      format: "ep-{YYYYMMDD}-{sequence}"
+      description: "Unique identifier for this episode"
+
+    task_id:
+      type: string
+      description: "Reference to the task that was assigned"
+
+    department:
+      type: string
+      enum: [research, architect, build, design, qa, growth, reporter, pm-sync]
+      description: "Which department executed this task"
+
+    agent_id:
+      type: string
+      description: "Identifier of the agent that executed the task"
+
+    timestamp_start:
+      type: string
+      format: ISO-8601
+      description: "When execution began"
+
+    timestamp_end:
+      type: string
+      format: ISO-8601
+      description: "When execution completed (signal emitted)"
+
+    task_description:
+      type: string
+      description: "The task as it was assigned to the agent"
+
+    actions:
+      type: array
+      items:
+        step:
+          type: integer
+          description: "Sequential step number"
+        action:
+          type: string
+          description: "What the agent did (e.g., read_file, call_api, generate_text)"
+        target:
+          type: string
+          description: "What the action was performed on"
+        summary:
+          type: string
+          description: "Brief description of the result"
+      description: "Ordered list of actions the agent took"
+
+    result:
+      type: object
+      properties:
+        signal:
+          type: string
+          enum: [done, blocked, needs-review]
+        artifacts:
+          type: array
+          items: string
+          description: "Paths or references to produced outputs"
+        summary:
+          type: string
+
+  optional:
+    context:
+      type: object
+      description: "Input context provided to the agent (files, prior results, etc.)"
+
+    constraints:
+      type: object
+      properties:
+        max_cycles:
+          type: integer
+        deadline:
+          type: string
+          format: ISO-8601
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+
+    reflection:
+      type: object
+      description: "Tier 1 — agent's self-critique"
+      properties:
+        verdict:
+          type: string
+          enum: [pass, revise, escalate]
+        score:
+          type: number
+          minimum: 1
+          maximum: 5
+        issues:
+          type: array
+          items:
+            severity:
+              type: string
+              enum: [minor, major, critical]
+            description:
+              type: string
+            suggestion:
+              type: string
+        summary:
+          type: string
+
+    evaluation:
+      type: object
+      description: "Tier 2 — evaluator's rubric-based score"
+      properties:
+        rubric_version:
+          type: string
+        scores:
+          type: object
+          description: "Per-criterion scores"
+        weighted_score:
+          type: number
+          minimum: 1
+          maximum: 5
+        recommendation:
+          type: string
+          enum: [approve, revise, reject]
+        summary:
+          type: string
+
+    human_feedback:
+      type: object
+      nullable: true
+      description: "Human review input, if provided"
+      properties:
+        reviewer:
+          type: string
+        score:
+          type: number
+        notes:
+          type: string
+        timestamp:
+          type: string
+          format: ISO-8601
+
+    llm_calls:
+      type: integer
+      description: "Total number of LLM calls made during this episode"
+
+    cost_usd:
+      type: number
+      description: "Estimated cost in USD for this episode"
+
+    parent_episode_id:
+      type: string
+      nullable: true
+      description: "If this is a retry or revision, the original episode ID"
